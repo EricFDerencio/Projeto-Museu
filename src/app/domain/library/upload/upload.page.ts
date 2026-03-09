@@ -1,17 +1,17 @@
-import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+Ôªøimport { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { UploadFormFactory } from '../../../domain/media/forms/upload-form.factory';
+import { UploadEditorState } from '../../../domain/media/forms/upload-form.types';
+import { MediaUploadMapper } from '../../../domain/media/mappers/media-upload.mapper';
+import { MediaService } from '../../../domain/media/services/media.service';
 import { FileDropzoneComponent } from '../../../shared/components/file-dropzone.component/file-dropzone.component';
 import { MediaTypeSelectorComponent } from '../../../shared/components/media-type-selector.component/media-type-selector.component';
 import { TagInputComponent } from '../../../shared/components/tag-input.component/tag-input.component';
 import { UploadActionsComponent } from '../../../shared/components/upload-actions.component/upload-actions.component';
 import { FilterOption } from '../../../shared/models/FilterOption';
-import { MediaRecord } from '../../../shared/models/MediaRecord';
 import { MediaType } from '../../../shared/models/MediaType';
-
-type MediaPayload = Omit<MediaRecord, 'id'>;
 
 @Component({
   selector: 'app-upload-page',
@@ -27,12 +27,11 @@ type MediaPayload = Omit<MediaRecord, 'id'>;
   styleUrl: './upload.page.scss',
 })
 export class UploadPage implements OnInit {
-  private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly apiUrl = '/api';
-  private readonly fallbackApiUrl = 'http://localhost:3000';
+  private readonly formFactory = inject(UploadFormFactory);
+  private readonly mediaService = inject(MediaService);
+  private readonly mediaMapper = inject(MediaUploadMapper);
 
   selectedType: MediaType = 'video';
   mediaFileName = '';
@@ -43,26 +42,16 @@ export class UploadPage implements OnInit {
   actionMessage = '';
   selectedMediaFile: File | null = null;
   selectedThumbnailFile: File | null = null;
-  editingMediaId: string | null = null;
-  originalRegistrationDate = '';
-  existingFileUrl = '';
-  existingThumbnailUrl = '';
+  editorState: UploadEditorState | null = null;
 
-  readonly form = this.fb.nonNullable.group({
-    title: ['', [Validators.required]],
-    description: ['', [Validators.required]],
-    text_content: [''],
-    historical_date: [''],
-    author_donor: [''],
-    museum_id: ['', [Validators.required]],
-  });
+  readonly form = this.formFactory.create();
 
   get isEditMode(): boolean {
-    return !!this.editingMediaId;
+    return !!this.editorState;
   }
 
   get submitLabel(): string {
-    return this.isEditMode ? 'Atualizar mÌdia' : 'Publicar mÌdia';
+    return this.isEditMode ? 'Atualizar m√≠dia' : 'Publicar m√≠dia';
   }
 
   get showMediaFileDropzone(): boolean {
@@ -70,9 +59,11 @@ export class UploadPage implements OnInit {
   }
 
   get canPublish(): boolean {
+    const hasExistingFile = !!this.editorState?.existingFileUrl;
     const hasRequiredMediaFile = this.showMediaFileDropzone
-      ? !!this.selectedMediaFile || !!this.existingFileUrl
+      ? !!this.selectedMediaFile || hasExistingFile
       : true;
+
     return this.form.valid && hasRequiredMediaFile && !this.isSubmitting;
   }
 
@@ -99,21 +90,33 @@ export class UploadPage implements OnInit {
     this.selectedType = type;
     this.mediaFileName = '';
     this.selectedMediaFile = null;
-    this.existingFileUrl = '';
+
+    if (this.editorState) {
+      this.editorState = { ...this.editorState, existingFileUrl: '' };
+    }
+
     this.updateTextContentValidation();
   }
 
   onMediaFileSelected(file: File): void {
     this.selectedMediaFile = file;
     this.mediaFileName = file.name;
-    this.existingFileUrl = '';
+
+    if (this.editorState) {
+      this.editorState = { ...this.editorState, existingFileUrl: '' };
+    }
+
     this.actionMessage = '';
   }
 
   onThumbnailSelected(file: File): void {
     this.selectedThumbnailFile = file;
     this.thumbnailFileName = file.name;
-    this.existingThumbnailUrl = '';
+
+    if (this.editorState) {
+      this.editorState = { ...this.editorState, existingThumbnailUrl: '' };
+    }
+
     this.actionMessage = '';
   }
 
@@ -127,58 +130,66 @@ export class UploadPage implements OnInit {
       return;
     }
 
-    this.form.reset({
-      title: '',
-      description: '',
-      text_content: '',
-      historical_date: '',
-      author_donor: '',
-      museum_id: '',
-    });
+    this.form.reset(this.formFactory.defaultValues());
     this.selectedType = 'video';
     this.mediaFileName = '';
     this.thumbnailFileName = '';
     this.selectedMediaFile = null;
     this.selectedThumbnailFile = null;
-    this.existingFileUrl = '';
-    this.existingThumbnailUrl = '';
     this.keywords = [];
     if (showMessage) {
-      this.actionMessage = 'Formul·rio limpo.';
+      this.actionMessage = 'Formul√°rio limpo.';
     }
   }
 
   onPublish(): void {
     if (!this.canPublish) {
       this.form.markAllAsTouched();
-      this.actionMessage = 'Revise os campos obrigatÛrios antes de salvar.';
+      this.actionMessage = 'Revise os campos obrigat√≥rios antes de salvar.';
       return;
     }
 
     this.isSubmitting = true;
     this.actionMessage = '';
 
-    const registrationDate = this.isEditMode ? this.originalRegistrationDate : this.today();
-    const payload: MediaPayload = {
-      title: this.form.controls.title.value.trim(),
-      description: this.form.controls.description.value.trim(),
-      historical_date: this.form.controls.historical_date.value || null,
-      keywords: this.keywords.length > 0 ? this.keywords : null,
-      registration_date: registrationDate,
-      author_donor: this.form.controls.author_donor.value.trim() || null,
-      museum_id: this.form.controls.museum_id.value,
-      media_type: this.selectedType,
-      file_url: this.buildFileUrl(),
-      thumbnail_url: this.buildThumbnailUrl(),
-      text_content: this.selectedType === 'text' ? this.form.controls.text_content.value.trim() : null,
-    };
+    const registrationDate = this.editorState?.registrationDate ?? this.today();
+    const payload = this.mediaMapper.toPayload(this.form.getRawValue(), {
+      selectedType: this.selectedType,
+      keywords: this.keywords,
+      selectedMediaFile: this.selectedMediaFile,
+      selectedThumbnailFile: this.selectedThumbnailFile,
+      existingFileUrl: this.editorState?.existingFileUrl ?? '',
+      existingThumbnailUrl: this.editorState?.existingThumbnailUrl ?? '',
+      registrationDate,
+    });
 
-    if (this.isEditMode && this.editingMediaId) {
-      this.updateMedia(this.editingMediaId, { ...payload, id: this.editingMediaId });
+    if (this.editorState?.mediaId) {
+      this.mediaService
+        .updateMedia(this.editorState.mediaId, { ...payload, id: this.editorState.mediaId })
+        .subscribe({
+          next: () => {
+            this.isSubmitting = false;
+            this.actionMessage = 'M√≠dia atualizada com sucesso.';
+          },
+          error: () => {
+            this.isSubmitting = false;
+            this.actionMessage = 'N√£o foi poss√≠vel atualizar agora.';
+          },
+        });
       return;
     }
 
-    this.createMedia(payload);
+    this.mediaService.createMedia(payload).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.onCancel(false);
+        this.actionMessage = 'M√≠dia publicada com sucesso.';
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.actionMessage = 'N√£o foi poss√≠vel publicar agora.';
+      },
+    });
   }
 
   private initEditMode(): void {
@@ -187,152 +198,31 @@ export class UploadPage implements OnInit {
       return;
     }
 
-    this.editingMediaId = mediaId;
-    this.loadMediaById(mediaId);
-  }
-
-  private loadMediaById(mediaId: string): void {
-    this.http.get<MediaRecord>(`${this.apiUrl}/media/${mediaId}`).subscribe({
+    this.mediaService.getMediaById(mediaId).subscribe({
       next: (media) => {
-        this.applyMediaToForm(media);
+        this.editorState = this.mediaMapper.toEditorState(media);
+        this.selectedType = this.editorState.selectedType;
+        this.keywords = [...this.editorState.keywords];
+        this.mediaFileName = this.editorState.mediaFileName;
+        this.thumbnailFileName = this.editorState.thumbnailFileName;
+        this.form.patchValue(this.mediaMapper.toFormValue(media));
+        this.updateTextContentValidation();
       },
       error: () => {
-        this.http.get<MediaRecord>(`${this.fallbackApiUrl}/media/${mediaId}`).subscribe({
-          next: (media) => {
-            this.applyMediaToForm(media);
-          },
-          error: () => {
-            this.actionMessage = 'N„o foi possÌvel carregar a mÌdia para ediÁ„o.';
-          },
-        });
-      },
-    });
-  }
-
-  private applyMediaToForm(media: MediaRecord): void {
-    this.selectedType = media.media_type;
-    this.keywords = media.keywords ?? [];
-    this.originalRegistrationDate = media.registration_date;
-    this.existingFileUrl = media.file_url;
-    this.existingThumbnailUrl = media.thumbnail_url ?? '';
-    this.mediaFileName = this.extractFileName(media.file_url);
-    this.thumbnailFileName = this.extractFileName(media.thumbnail_url ?? '');
-
-    this.form.patchValue({
-      title: media.title,
-      description: media.description,
-      text_content: media.text_content ?? '',
-      historical_date: media.historical_date ?? '',
-      author_donor: media.author_donor ?? '',
-      museum_id: String(media.museum_id),
-    });
-
-    this.updateTextContentValidation();
-  }
-
-  private createMedia(payload: MediaPayload): void {
-    this.http.post(`${this.apiUrl}/media`, payload).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.onCancel(false);
-        this.actionMessage = 'MÌdia publicada com sucesso.';
-      },
-      error: () => {
-        this.http.post(`${this.fallbackApiUrl}/media`, payload).subscribe({
-          next: () => {
-            this.isSubmitting = false;
-            this.onCancel(false);
-            this.actionMessage = 'MÌdia publicada com sucesso.';
-          },
-          error: () => {
-            this.isSubmitting = false;
-            this.actionMessage = 'N„o foi possÌvel publicar agora.';
-          },
-        });
-      },
-    });
-  }
-
-  private updateMedia(mediaId: string, payload: MediaRecord): void {
-    this.http.put(`${this.apiUrl}/media/${mediaId}`, payload).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.actionMessage = 'MÌdia atualizada com sucesso.';
-      },
-      error: () => {
-        this.http.put(`${this.fallbackApiUrl}/media/${mediaId}`, payload).subscribe({
-          next: () => {
-            this.isSubmitting = false;
-            this.actionMessage = 'MÌdia atualizada com sucesso.';
-          },
-          error: () => {
-            this.isSubmitting = false;
-            this.actionMessage = 'N„o foi possÌvel atualizar agora.';
-          },
-        });
+        this.actionMessage = 'N√£o foi poss√≠vel carregar a m√≠dia para edi√ß√£o.';
       },
     });
   }
 
   private loadMuseums(): void {
-    this.http.get<Array<{ id: string | number; name: string }>>(`${this.apiUrl}/museums`).subscribe({
+    this.mediaService.getMuseums().subscribe({
       next: (museums) => {
         this.museums = museums.map((museum) => ({ value: String(museum.id), label: museum.name }));
       },
       error: () => {
-        this.http
-          .get<Array<{ id: string | number; name: string }>>(`${this.fallbackApiUrl}/museums`)
-          .subscribe({
-            next: (museums) => {
-              this.museums = museums.map((museum) => ({ value: String(museum.id), label: museum.name }));
-            },
-            error: () => {
-              this.museums = [];
-            },
-          });
+        this.museums = [];
       },
     });
-  }
-
-  private buildFileUrl(): string {
-    if (this.selectedType === 'text') {
-      return this.existingFileUrl || `/media/texts/manual-${Date.now()}.txt`;
-    }
-
-    const fileName = this.selectedMediaFile?.name ?? '';
-    const folderByType: Record<'video' | 'audio' | 'image', string> = {
-      video: 'videos',
-      audio: 'audio',
-      image: 'images',
-    };
-
-    if (fileName) {
-      return `/media/${folderByType[this.selectedType]}/${fileName}`;
-    }
-
-    return this.existingFileUrl;
-  }
-
-  private buildThumbnailUrl(): string {
-    const fileName = this.selectedThumbnailFile?.name ?? '';
-    if (fileName) {
-      return `/media/thumbnails/${fileName}`;
-    }
-
-    if (this.existingThumbnailUrl) {
-      return this.existingThumbnailUrl;
-    }
-
-    const mediaFileName = this.selectedMediaFile?.name ?? '';
-    if (this.selectedType === 'image' && mediaFileName) {
-      return `/media/images/${mediaFileName}`;
-    }
-
-    if (this.selectedType === 'image' && this.existingFileUrl.startsWith('/media/images/')) {
-      return this.existingFileUrl;
-    }
-
-    return this.generateThumbnailPlaceholderDataUrl();
   }
 
   private updateTextContentValidation(): void {
@@ -351,23 +241,5 @@ export class UploadPage implements OnInit {
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const dd = String(now.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
-  }
-
-  private extractFileName(path: string): string {
-    if (!path || path.startsWith('data:')) {
-      return '';
-    }
-
-    const segments = path.split('/');
-    return segments[segments.length - 1] ?? '';
-  }
-
-  private generateThumbnailPlaceholderDataUrl(): string {
-    const title = this.form.controls.title.value.trim();
-    const letter = (title[0] ?? 'M').toUpperCase();
-    const hue = Math.floor(Math.random() * 360);
-    const background = `hsl(${hue}, 70%, 55%)`;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" fill="${background}"/><text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="220" fill="#ffffff">${letter}</text></svg>`;
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
 }
