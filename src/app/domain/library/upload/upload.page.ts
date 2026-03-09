@@ -2,12 +2,16 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FileDropzoneComponent } from '../../../shared/components/file-dropzone.component/file-dropzone.component';
 import { MediaTypeSelectorComponent } from '../../../shared/components/media-type-selector.component/media-type-selector.component';
 import { TagInputComponent } from '../../../shared/components/tag-input.component/tag-input.component';
 import { UploadActionsComponent } from '../../../shared/components/upload-actions.component/upload-actions.component';
-import { MediaType } from '../../../shared/models/MediaType';
 import { FilterOption } from '../../../shared/models/FilterOption';
+import { MediaRecord } from '../../../shared/models/MediaRecord';
+import { MediaType } from '../../../shared/models/MediaType';
+
+type MediaPayload = Omit<MediaRecord, 'id'>;
 
 @Component({
   selector: 'app-upload-page',
@@ -25,6 +29,8 @@ import { FilterOption } from '../../../shared/models/FilterOption';
 export class UploadPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly http = inject(HttpClient);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly apiUrl = '/api';
   private readonly fallbackApiUrl = 'http://localhost:3000';
 
@@ -37,8 +43,10 @@ export class UploadPage implements OnInit {
   actionMessage = '';
   selectedMediaFile: File | null = null;
   selectedThumbnailFile: File | null = null;
-  mediaPreviewDataUrl: string | null = null;
-  thumbnailPreviewDataUrl: string | null = null;
+  editingMediaId: string | null = null;
+  originalRegistrationDate = '';
+  existingFileUrl = '';
+  existingThumbnailUrl = '';
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required]],
@@ -49,12 +57,22 @@ export class UploadPage implements OnInit {
     museum_id: ['', [Validators.required]],
   });
 
+  get isEditMode(): boolean {
+    return !!this.editingMediaId;
+  }
+
+  get submitLabel(): string {
+    return this.isEditMode ? 'Atualizar mídia' : 'Publicar mídia';
+  }
+
   get showMediaFileDropzone(): boolean {
     return this.selectedType !== 'text';
   }
 
   get canPublish(): boolean {
-    const hasRequiredMediaFile = this.showMediaFileDropzone ? !!this.selectedMediaFile : true;
+    const hasRequiredMediaFile = this.showMediaFileDropzone
+      ? !!this.selectedMediaFile || !!this.existingFileUrl
+      : true;
     return this.form.valid && hasRequiredMediaFile && !this.isSubmitting;
   }
 
@@ -74,32 +92,29 @@ export class UploadPage implements OnInit {
   ngOnInit(): void {
     this.updateTextContentValidation();
     this.loadMuseums();
+    this.initEditMode();
   }
 
   onTypeChange(type: MediaType): void {
     this.selectedType = type;
     this.mediaFileName = '';
     this.selectedMediaFile = null;
-    this.mediaPreviewDataUrl = null;
+    this.existingFileUrl = '';
     this.updateTextContentValidation();
   }
 
   onMediaFileSelected(file: File): void {
     this.selectedMediaFile = file;
     this.mediaFileName = file.name;
+    this.existingFileUrl = '';
     this.actionMessage = '';
-    this.readAsDataUrl(file).then((dataUrl) => {
-      this.mediaPreviewDataUrl = dataUrl;
-    });
   }
 
   onThumbnailSelected(file: File): void {
     this.selectedThumbnailFile = file;
     this.thumbnailFileName = file.name;
+    this.existingThumbnailUrl = '';
     this.actionMessage = '';
-    this.readAsDataUrl(file).then((dataUrl) => {
-      this.thumbnailPreviewDataUrl = dataUrl;
-    });
   }
 
   onKeywordsChange(tags: string[]): void {
@@ -107,6 +122,11 @@ export class UploadPage implements OnInit {
   }
 
   onCancel(showMessage = true): void {
+    if (this.isEditMode) {
+      void this.router.navigate(['/library']);
+      return;
+    }
+
     this.form.reset({
       title: '',
       description: '',
@@ -120,55 +140,134 @@ export class UploadPage implements OnInit {
     this.thumbnailFileName = '';
     this.selectedMediaFile = null;
     this.selectedThumbnailFile = null;
-    this.mediaPreviewDataUrl = null;
-    this.thumbnailPreviewDataUrl = null;
+    this.existingFileUrl = '';
+    this.existingThumbnailUrl = '';
     this.keywords = [];
     if (showMessage) {
-      this.actionMessage = 'Placeholder: formulÃ¡rio limpo.';
+      this.actionMessage = 'Formulário limpo.';
     }
   }
 
   onPublish(): void {
     if (!this.canPublish) {
       this.form.markAllAsTouched();
-      this.actionMessage = 'Revise os campos obrigatÃ³rios antes de publicar.';
+      this.actionMessage = 'Revise os campos obrigatórios antes de salvar.';
       return;
     }
 
     this.isSubmitting = true;
     this.actionMessage = '';
 
-    const payload = {
+    const registrationDate = this.isEditMode ? this.originalRegistrationDate : this.today();
+    const payload: MediaPayload = {
       title: this.form.controls.title.value.trim(),
       description: this.form.controls.description.value.trim(),
       historical_date: this.form.controls.historical_date.value || null,
       keywords: this.keywords.length > 0 ? this.keywords : null,
-      registration_date: this.today(),
+      registration_date: registrationDate,
       author_donor: this.form.controls.author_donor.value.trim() || null,
       museum_id: this.form.controls.museum_id.value,
       media_type: this.selectedType,
       file_url: this.buildFileUrl(),
       thumbnail_url: this.buildThumbnailUrl(),
-      text_content:
-        this.selectedType === 'text' ? this.form.controls.text_content.value.trim() : null,
+      text_content: this.selectedType === 'text' ? this.form.controls.text_content.value.trim() : null,
     };
 
+    if (this.isEditMode && this.editingMediaId) {
+      this.updateMedia(this.editingMediaId, { ...payload, id: this.editingMediaId });
+      return;
+    }
+
+    this.createMedia(payload);
+  }
+
+  private initEditMode(): void {
+    const mediaId = this.route.snapshot.paramMap.get('id');
+    if (!mediaId) {
+      return;
+    }
+
+    this.editingMediaId = mediaId;
+    this.loadMediaById(mediaId);
+  }
+
+  private loadMediaById(mediaId: string): void {
+    this.http.get<MediaRecord>(`${this.apiUrl}/media/${mediaId}`).subscribe({
+      next: (media) => {
+        this.applyMediaToForm(media);
+      },
+      error: () => {
+        this.http.get<MediaRecord>(`${this.fallbackApiUrl}/media/${mediaId}`).subscribe({
+          next: (media) => {
+            this.applyMediaToForm(media);
+          },
+          error: () => {
+            this.actionMessage = 'Não foi possível carregar a mídia para edição.';
+          },
+        });
+      },
+    });
+  }
+
+  private applyMediaToForm(media: MediaRecord): void {
+    this.selectedType = media.media_type;
+    this.keywords = media.keywords ?? [];
+    this.originalRegistrationDate = media.registration_date;
+    this.existingFileUrl = media.file_url;
+    this.existingThumbnailUrl = media.thumbnail_url ?? '';
+    this.mediaFileName = this.extractFileName(media.file_url);
+    this.thumbnailFileName = this.extractFileName(media.thumbnail_url ?? '');
+
+    this.form.patchValue({
+      title: media.title,
+      description: media.description,
+      text_content: media.text_content ?? '',
+      historical_date: media.historical_date ?? '',
+      author_donor: media.author_donor ?? '',
+      museum_id: String(media.museum_id),
+    });
+
+    this.updateTextContentValidation();
+  }
+
+  private createMedia(payload: MediaPayload): void {
     this.http.post(`${this.apiUrl}/media`, payload).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.onCancel(false);
-        this.actionMessage = 'MÃ­dia publicada com sucesso.';
+        this.actionMessage = 'Mídia publicada com sucesso.';
       },
       error: () => {
         this.http.post(`${this.fallbackApiUrl}/media`, payload).subscribe({
           next: () => {
             this.isSubmitting = false;
             this.onCancel(false);
-            this.actionMessage = 'MÃ­dia publicada com sucesso.';
+            this.actionMessage = 'Mídia publicada com sucesso.';
           },
           error: () => {
             this.isSubmitting = false;
-            this.actionMessage = 'NÃ£o foi possÃ­vel publicar agora.';
+            this.actionMessage = 'Não foi possível publicar agora.';
+          },
+        });
+      },
+    });
+  }
+
+  private updateMedia(mediaId: string, payload: MediaRecord): void {
+    this.http.put(`${this.apiUrl}/media/${mediaId}`, payload).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.actionMessage = 'Mídia atualizada com sucesso.';
+      },
+      error: () => {
+        this.http.put(`${this.fallbackApiUrl}/media/${mediaId}`, payload).subscribe({
+          next: () => {
+            this.isSubmitting = false;
+            this.actionMessage = 'Mídia atualizada com sucesso.';
+          },
+          error: () => {
+            this.isSubmitting = false;
+            this.actionMessage = 'Não foi possível atualizar agora.';
           },
         });
       },
@@ -197,7 +296,7 @@ export class UploadPage implements OnInit {
 
   private buildFileUrl(): string {
     if (this.selectedType === 'text') {
-      return `/media/texts/manual-${Date.now()}.txt`;
+      return this.existingFileUrl || `/media/texts/manual-${Date.now()}.txt`;
     }
 
     const fileName = this.selectedMediaFile?.name ?? '';
@@ -207,7 +306,11 @@ export class UploadPage implements OnInit {
       image: 'images',
     };
 
-    return fileName ? `/media/${folderByType[this.selectedType]}/${fileName}` : '';
+    if (fileName) {
+      return `/media/${folderByType[this.selectedType]}/${fileName}`;
+    }
+
+    return this.existingFileUrl;
   }
 
   private buildThumbnailUrl(): string {
@@ -216,9 +319,17 @@ export class UploadPage implements OnInit {
       return `/media/thumbnails/${fileName}`;
     }
 
+    if (this.existingThumbnailUrl) {
+      return this.existingThumbnailUrl;
+    }
+
     const mediaFileName = this.selectedMediaFile?.name ?? '';
     if (this.selectedType === 'image' && mediaFileName) {
       return `/media/images/${mediaFileName}`;
+    }
+
+    if (this.selectedType === 'image' && this.existingFileUrl.startsWith('/media/images/')) {
+      return this.existingFileUrl;
     }
 
     return this.generateThumbnailPlaceholderDataUrl();
@@ -242,13 +353,13 @@ export class UploadPage implements OnInit {
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  private readAsDataUrl(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result ?? ''));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
-    });
+  private extractFileName(path: string): string {
+    if (!path || path.startsWith('data:')) {
+      return '';
+    }
+
+    const segments = path.split('/');
+    return segments[segments.length - 1] ?? '';
   }
 
   private generateThumbnailPlaceholderDataUrl(): string {
