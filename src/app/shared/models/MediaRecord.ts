@@ -12,6 +12,6 @@ export interface MediaRecord {
 
   museum_id: string | number;
   media_type: MediaType;
-  thumbnail_url?: string;
+  thumbnail_url?: string | null;
+  text_content?: string | null;
 }
-

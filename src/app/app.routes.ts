@@ -17,8 +17,17 @@ export const routes: Routes = [
     component: UploadPage,
   },
   {
+    path: 'upload/:id',
+    component: UploadPage,
+  },
+  {
     path: 'library/upload',
     redirectTo: 'upload',
+    pathMatch: 'full',
+  },
+  {
+    path: 'library/upload/:id',
+    redirectTo: 'upload/:id',
     pathMatch: 'full',
   },
   {

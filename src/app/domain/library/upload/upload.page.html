@@ -1,7 +1,13 @@
 <section class="upload-page">
   <header class="upload-header">
-    <h1>Upload de Mídia</h1>
-    <p>Adicione novos vídeos, áudios ou imagens</p>
+    <h1>{{ isEditMode ? 'Editar Mídia' : 'Upload de Mídia' }}</h1>
+    <p>
+      {{
+        isEditMode
+          ? 'Atualize os dados da mídia selecionada'
+          : 'Adicione novos vídeos, áudios ou imagens'
+      }}
+    </p>
   </header>
 
   <app-media-type-selector
@@ -60,6 +66,18 @@
 
       <div class="row">
         <label>
+          <span>Data histórica</span>
+          <input type="date" formControlName="historical_date" />
+        </label>
+
+        <label>
+          <span>Autor/Doador</span>
+          <input type="text" formControlName="author_donor" placeholder="Opcional" />
+        </label>
+      </div>
+
+      <div class="row">
+        <label>
           <span>Museu *</span>
           <select formControlName="museum_id">
             <option value="">Selecione um museu</option>
@@ -67,11 +85,6 @@
               <option [value]="museum.value">{{ museum.label }}</option>
             }
           </select>
-        </label>
-
-        <label>
-          <span>Data *</span>
-          <input type="date" formControlName="registration_date" />
         </label>
       </div>
 
@@ -87,6 +100,7 @@
   </section>
 
   <app-upload-actions
+    [submitLabel]="submitLabel"
     [submitting]="isSubmitting"
     [disabled]="!canPublish"
     (cancel)="onCancel()"

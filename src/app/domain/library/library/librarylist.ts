@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { FilterComponent } from '../../../shared/components/filter.component/filter.component';
 import { MediaCardComponent } from '../../../shared/components/media-card.component/media-card.component';
 import { FilterChange } from '../../../shared/models/FilterChange';
@@ -19,6 +20,7 @@ interface Museum {
 })
 export class Librarylist implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly apiUrl = '/api';
   private readonly fallbackApiUrl = 'http://localhost:3000';
   private currentFilter: FilterChange = { search: '', mediaType: '', museumId: '' };
@@ -58,7 +60,7 @@ export class Librarylist implements OnInit {
   }
 
   onViewMedia(mediaId: string | number): void {
-    this.placeholderMessage = `Placeholder: edicao do item ${mediaId} sera implementada depois.`;
+    void this.router.navigate(['/upload', mediaId]);
   }
 
   onDeleteMedia(mediaId: string | number): void {
