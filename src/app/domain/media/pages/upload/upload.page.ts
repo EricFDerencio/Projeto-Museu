@@ -2,16 +2,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UploadFormFactory } from '../../../domain/media/forms/upload-form.factory';
-import { UploadEditorState } from '../../../domain/media/forms/upload-form.types';
-import { MediaUploadMapper } from '../../../domain/media/mappers/media-upload.mapper';
-import { MediaService } from '../../../domain/media/services/media.service';
-import { FileDropzoneComponent } from '../../../shared/components/file-dropzone.component/file-dropzone.component';
-import { MediaTypeSelectorComponent } from '../../../shared/components/media-type-selector.component/media-type-selector.component';
-import { TagInputComponent } from '../../../shared/components/tag-input.component/tag-input.component';
-import { UploadActionsComponent } from '../../../shared/components/upload-actions.component/upload-actions.component';
-import { FilterOption } from '../../../shared/models/FilterOption';
-import { MediaType } from '../../../shared/models/MediaType';
+import { UploadFormFactory } from '../../forms/upload-form.factory';
+import { UploadEditorState } from '../../forms/upload-form.types';
+import { MediaUploadMapper } from '../../mappers/media-upload.mapper';
+import { MediaService } from '../../services/media.service';
+import { FileDropzoneComponent } from '../../../../shared/components/file-dropzone.component/file-dropzone.component';
+import { MediaTypeSelectorComponent } from '../../../../shared/components/media-type-selector.component/media-type-selector.component';
+import { TagInputComponent } from '../../../../shared/components/tag-input.component/tag-input.component';
+import { UploadActionsComponent } from '../../../../shared/components/upload-actions.component/upload-actions.component';
+import { FilterOption } from '../../../../shared/models/FilterOption';
+import { MediaType } from '../../../../shared/models/MediaType';
 
 @Component({
   selector: 'app-upload-page',
