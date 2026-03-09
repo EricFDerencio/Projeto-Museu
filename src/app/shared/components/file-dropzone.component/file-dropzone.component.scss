@@ -1,0 +1,58 @@
+.dropzone-shell {
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background: #f5f6f8;
+  padding: 0.95rem;
+}
+
+.dropzone-shell h3 {
+  margin: 0 0 0.8rem;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.dropzone {
+  width: 100%;
+  min-height: 9.5rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.45rem;
+  background: #f8f9fb;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 0.55rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 1rem;
+}
+
+.dropzone.is-compact {
+  min-height: 2.4rem;
+  padding: 0.45rem;
+}
+
+.dropzone.is-dragging {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.icon {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.primary {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.secondary {
+  color: #64748b;
+  font-size: 0.9rem;
+}

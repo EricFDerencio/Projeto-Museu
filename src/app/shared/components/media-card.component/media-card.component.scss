@@ -1,0 +1,144 @@
+.media-card {
+  width: 100%;
+  min-width: 17rem;
+  max-width: 17rem;
+  height: 23rem;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: grid;
+  grid-template-rows: 14rem 1fr;
+}
+
+.media-card--clickable {
+  cursor: pointer;
+}
+
+.media-card__cover {
+  position: relative;
+  height: 14rem;
+  background: #f2df12;
+}
+
+.media-card__cover img,
+.media-card__cover-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.media-card__type {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  background: rgba(35, 31, 32, 0.75);
+  color: #ffffff;
+  border-radius: 0.55rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.media-card__body {
+  padding: 1rem 1.2rem;
+  background: #efefef;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.media-card__body h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 2rem;
+  line-height: 1.05;
+  font-weight: 700;
+}
+
+.media-card__body p {
+  margin: 0.5rem 0 0;
+  color: #374151;
+  font-size: 1.55rem;
+}
+
+.media-card__actions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.icon-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.icon-button svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.icon-button--edit {
+  color: #111827;
+}
+
+.icon-button--danger {
+  color: #ef4444;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.modal-content {
+  width: min(30rem, 100%);
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.modal-content h4 {
+  margin: 0 0 0.5rem;
+}
+
+.modal-content p {
+  margin: 0 0 1rem;
+}
+
+.modal-content button {
+  border: 0;
+  border-radius: 0.45rem;
+  background: #111827;
+  color: #ffffff;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+}
+
+@media (min-width: 992px) {
+  .media-card {
+    min-width: 18rem;
+    max-width: 18rem;
+    height: 24rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .media-card {
+    min-width: 18.5rem;
+    max-width: 18.5rem;
+    height: 24.5rem;
+  }
+}

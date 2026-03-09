@@ -1,0 +1,19 @@
+<footer class="upload-actions">
+  <button type="button" class="btn btn-cancel" [disabled]="submitting" (click)="onCancel()">
+    {{ cancelLabel }}
+  </button>
+
+  <button
+    type="button"
+    class="btn btn-submit"
+    [disabled]="disabled || submitting"
+    (click)="onSubmit()"
+  >
+    @if (submitting) {
+      Publicando...
+    } @else {
+      {{ submitLabel }}
+    }
+  </button>
+</footer>
+

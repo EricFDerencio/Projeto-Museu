@@ -1,0 +1,67 @@
+.tag-input-shell {
+  border: 1px solid #d1d5db;
+  border-radius: 0.95rem;
+  background: #f3f4f6;
+  padding: 1.25rem;
+}
+
+.tag-input-shell.is-embedded {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.tag-input-shell h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.tag-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.55rem;
+}
+
+.tag-input-row input {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.95rem;
+}
+
+.tag-input-row button {
+  border: 0;
+  border-radius: 0.45rem;
+  background: #111827;
+  color: #ffffff;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+}
+
+.tag-list {
+  margin-top: 0.85rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #e2e8f0;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.tag-pill button {
+  border: 0;
+  background: transparent;
+  color: #334155;
+  cursor: pointer;
+}

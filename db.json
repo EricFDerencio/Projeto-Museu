@@ -1,0 +1,88 @@
+{
+  "museums": [
+    {
+      "id": "m1",
+      "name": "Museu de Arte Moderna",
+      "color": "#1E40AF",
+      "icon": "Building2",
+      "description": "Acervo de arte contemporanea"
+    },
+    {
+      "id": "m2",
+      "name": "Museu Historico Nacional",
+      "color": "#0F766E",
+      "icon": "Landmark",
+      "description": "Colecoes historicas e documentos"
+    }
+  ],
+  "media": [
+    {
+      "id": "md1",
+      "title": "Tour Virtual - Sala Principal",
+      "description": "Passeio guiado pela sala principal",
+      "historical_date": "1971-09-15",
+      "registration_date": "2026-03-04",
+      "keywords": [
+        "tour",
+        "arte",
+        "virtual"
+      ],
+      "author_donor": "Equipe Curatorial MAM",
+      "museum_id": "m1",
+      "media_type": "video",
+      "file_url": "/media/videos/tour-principal.mp4",
+      "thumbnail_url": "/media/thumbnails/mam-tour-thumb.svg"
+    },
+    {
+      "id": "md2",
+      "title": "Narracao da Exposicao Colonial",
+      "description": "Audio com explicacao da ala colonial",
+      "historical_date": "1822-09-07",
+      "registration_date": "2026-03-04",
+      "keywords": [
+        "audio",
+        "historia",
+        "colonial"
+      ],
+      "author_donor": null,
+      "museum_id": "m2",
+      "media_type": "audio",
+      "file_url": "/media/audio/narracao-colonial.mp3",
+      "thumbnail_url": "/media/thumbnails/mam-tour-thumb.svg"
+    },
+    {
+      "id": "md3",
+      "title": "Catalogo Digital - Pecas Raras",
+      "description": "Texto detalhado sobre o acervo de pecas raras",
+      "historical_date": null,
+      "registration_date": "2026-03-04",
+      "keywords": null,
+      "author_donor": null,
+      "museum_id": "m2",
+      "media_type": "text",
+      "file_url": "/media/texts/catalogo-pecas-raras.txt",
+      "thumbnail_url": "/media/images/mam-tour.svg"
+    },
+    {
+      "id": "b99a",
+      "title": "Teste",
+      "description": "Este é um teste",
+      "historical_date": null,
+      "keywords": [
+        "Java Script",
+        "Programação",
+        "JS",
+        "Teste",
+        "Linguagem"
+      ],
+      "registration_date": "2026-03-04",
+      "author_donor": null,
+      "museum_id": "m1",
+      "media_type": "image",
+      "file_url": "/media/images/js.png",
+      "thumbnail_url": "/media/thumbnails/js.png",
+      "text_content": null
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

@@ -1,0 +1,41 @@
+<section class="filter-bar">
+  <label class="search-field" aria-label="Buscar por título e tags">
+    <span class="search-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" role="img">
+        <path
+          d="M15.5 15.5L21 21M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+      </svg>
+    </span>
+    <input
+      type="text"
+      name="search"
+      [(ngModel)]="search"
+      (ngModelChange)="onFilterChange()"
+      placeholder="Buscar por título, tags..."
+    />
+  </label>
+
+  <label class="select-field">
+    <select name="mediaType" [(ngModel)]="mediaType" (ngModelChange)="onFilterChange()">
+      <option value="">Todos os tipos</option>
+      @for (type of mediaTypes; track type.value) {
+        <option [value]="type.value">{{ type.label }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="select-field">
+    <select name="museumId" [(ngModel)]="museumId" (ngModelChange)="onFilterChange()">
+      <option value="">Todos os museus</option>
+      @for (museum of museums; track museum.value) {
+        <option [value]="museum.value">{{ museum.label }}</option>
+      }
+    </select>
+  </label>
+</section>

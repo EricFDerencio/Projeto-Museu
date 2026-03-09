@@ -1,0 +1,32 @@
+.upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  border-color: #d1d5db;
+  background: #ffffff;
+  color: #111827;
+}
+
+.btn-submit {
+  background: #2563eb;
+  color: #ffffff;
+}
+

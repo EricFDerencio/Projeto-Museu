@@ -1,0 +1,82 @@
+.upload-page {
+  padding: 0.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.upload-header h1 {
+  margin: 0;
+  font-size: 2.15rem;
+  color: #0f172a;
+  line-height: 1.15;
+}
+
+.upload-header p {
+  margin: 0.2rem 0 0;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.basic-info-shell {
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background: #f5f6f8;
+  padding: 0.95rem;
+}
+
+.basic-info-shell h3 {
+  margin: 0 0 0.8rem;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.basic-info-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.basic-info-form label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.basic-info-form span {
+  font-size: 0.86rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.basic-info-form input,
+.basic-info-form textarea,
+.basic-info-form select {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.35rem;
+  background: #ffffff;
+  padding: 0.58rem 0.68rem;
+  font-size: 0.9rem;
+}
+
+.basic-info-form textarea {
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 1fr;
+}
+
+.action-message {
+  margin: 0;
+}
+
+@media (min-width: 900px) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.action-message {
+  color: #334155;
+  font-size: 0.85rem;
+}

@@ -1,0 +1,24 @@
+<section class="tag-input-shell" [class.is-embedded]="embedded">
+  <h3>{{ title }}</h3>
+
+  <div class="tag-input-row">
+    <input
+      type="text"
+      [placeholder]="placeholder"
+      [(ngModel)]="draftTag"
+      (keydown.enter)="addTag()"
+    />
+    <button type="button" (click)="addTag()">{{ buttonLabel }}</button>
+  </div>
+
+  @if (tags.length > 0) {
+    <div class="tag-list">
+      @for (tag of tags; track tag) {
+        <span class="tag-pill">
+          {{ tag }}
+          <button type="button" (click)="removeTag(tag)" aria-label="Remover tag">x</button>
+        </span>
+      }
+    </div>
+  }
+</section>

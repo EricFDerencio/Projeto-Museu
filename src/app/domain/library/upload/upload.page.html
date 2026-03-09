@@ -1,0 +1,99 @@
+<section class="upload-page">
+  <header class="upload-header">
+    <h1>Upload de Mídia</h1>
+    <p>Adicione novos vídeos, áudios ou imagens</p>
+  </header>
+
+  <app-media-type-selector
+    [selectedType]="selectedType"
+    (selectedTypeChange)="onTypeChange($event)"
+  ></app-media-type-selector>
+
+  @if (showMediaFileDropzone) {
+    <app-file-dropzone
+      title="Arquivo de Mídia"
+      [mediaType]="selectedType"
+      [accept]="mediaAccept"
+      [selectedFileName]="mediaFileName"
+      (fileSelected)="onMediaFileSelected($event)"
+    ></app-file-dropzone>
+  }
+
+  <app-file-dropzone
+    title="Thumbnail (Opcional)"
+    mediaType="image"
+    accept="image/*"
+    [selectedFileName]="thumbnailFileName"
+    [compact]="true"
+    compactPlaceholder="Adicionar imagem de capa"
+    (fileSelected)="onThumbnailSelected($event)"
+  ></app-file-dropzone>
+
+  <section class="basic-info-shell">
+    <h3>Informações Básicas</h3>
+
+    <form [formGroup]="form" class="basic-info-form" novalidate>
+      <label>
+        <span>Título *</span>
+        <input type="text" formControlName="title" placeholder="Digite o título da mídia" />
+      </label>
+
+      <label>
+        <span>Descrição *</span>
+        <textarea
+          rows="4"
+          formControlName="description"
+          placeholder="Descreva o conteúdo da mídia"
+        ></textarea>
+      </label>
+
+      @if (selectedType === 'text') {
+        <label>
+          <span>Conteúdo do Texto *</span>
+          <textarea
+            rows="7"
+            formControlName="text_content"
+            placeholder="Digite ou cole o conteúdo do texto aqui..."
+          ></textarea>
+        </label>
+      }
+
+      <div class="row">
+        <label>
+          <span>Museu *</span>
+          <select formControlName="museum_id">
+            <option value="">Selecione um museu</option>
+            @for (museum of museums; track museum.value) {
+              <option [value]="museum.value">{{ museum.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Data *</span>
+          <input type="date" formControlName="registration_date" />
+        </label>
+      </div>
+
+      <app-tag-input
+        [embedded]="true"
+        title="Tags"
+        placeholder="Digite uma tag e pressione Enter"
+        buttonLabel="Adicionar"
+        [tags]="keywords"
+        (tagsChange)="onKeywordsChange($event)"
+      ></app-tag-input>
+    </form>
+  </section>
+
+  <app-upload-actions
+    [submitting]="isSubmitting"
+    [disabled]="!canPublish"
+    (cancel)="onCancel()"
+    (submit)="onPublish()"
+  ></app-upload-actions>
+
+  @if (actionMessage) {
+    <p class="action-message">{{ actionMessage }}</p>
+  }
+</section>

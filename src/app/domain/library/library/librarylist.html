@@ -1,0 +1,34 @@
+<section class="library-page">
+  <header class="library-header">
+    <h1>Biblioteca de Mídias</h1>
+    <p>{{ collectionCounterLabel }}</p>
+  </header>
+
+  <section class="filter-shell">
+    <app-filter
+      [mediaTypes]="mediaTypes"
+      [museums]="museumOptions"
+      (filterChange)="onFilterChange($event)"
+    ></app-filter>
+  </section>
+
+  @if (placeholderMessage) {
+    <section class="placeholder-banner">
+      <span>{{ placeholderMessage }}</span>
+      <button type="button" (click)="clearPlaceholder()">Fechar</button>
+    </section>
+  }
+
+  <section class="media-list">
+    @for (item of filteredMedia; track item.id) {
+      <app-media-card
+        [item]="item"
+        [editMode]="true"
+        (view)="onViewMedia($event)"
+        (remove)="onDeleteMedia($event)"
+      ></app-media-card>
+    } @empty {
+      <p class="empty-state">Nenhuma midia encontrada com os filtros selecionados.</p>
+    }
+  </section>
+</section>
