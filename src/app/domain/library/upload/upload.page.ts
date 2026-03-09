@@ -44,8 +44,9 @@ export class UploadPage implements OnInit {
     title: ['', [Validators.required]],
     description: ['', [Validators.required]],
     text_content: [''],
+    historical_date: [''],
+    author_donor: [''],
     museum_id: ['', [Validators.required]],
-    registration_date: [this.today(), [Validators.required]],
   });
 
   get showMediaFileDropzone(): boolean {
@@ -110,8 +111,9 @@ export class UploadPage implements OnInit {
       title: '',
       description: '',
       text_content: '',
+      historical_date: '',
+      author_donor: '',
       museum_id: '',
-      registration_date: this.today(),
     });
     this.selectedType = 'video';
     this.mediaFileName = '';
@@ -139,10 +141,10 @@ export class UploadPage implements OnInit {
     const payload = {
       title: this.form.controls.title.value.trim(),
       description: this.form.controls.description.value.trim(),
-      historical_date: null,
+      historical_date: this.form.controls.historical_date.value || null,
       keywords: this.keywords.length > 0 ? this.keywords : null,
-      registration_date: this.form.controls.registration_date.value,
-      author_donor: null,
+      registration_date: this.today(),
+      author_donor: this.form.controls.author_donor.value.trim() || null,
       museum_id: this.form.controls.museum_id.value,
       media_type: this.selectedType,
       file_url: this.buildFileUrl(),
@@ -198,10 +200,6 @@ export class UploadPage implements OnInit {
       return `/media/texts/manual-${Date.now()}.txt`;
     }
 
-    if (this.selectedType === 'image' && this.mediaPreviewDataUrl) {
-      return this.mediaPreviewDataUrl;
-    }
-
     const fileName = this.selectedMediaFile?.name ?? '';
     const folderByType: Record<'video' | 'audio' | 'image', string> = {
       video: 'videos',
@@ -213,12 +211,17 @@ export class UploadPage implements OnInit {
   }
 
   private buildThumbnailUrl(): string {
-    if (this.thumbnailPreviewDataUrl) {
-      return this.thumbnailPreviewDataUrl;
+    const fileName = this.selectedThumbnailFile?.name ?? '';
+    if (fileName) {
+      return `/media/thumbnails/${fileName}`;
     }
 
-    const fileName = this.selectedThumbnailFile?.name ?? '';
-    return fileName ? `/media/thumbnails/${fileName}` : '';
+    const mediaFileName = this.selectedMediaFile?.name ?? '';
+    if (this.selectedType === 'image' && mediaFileName) {
+      return `/media/images/${mediaFileName}`;
+    }
+
+    return this.generateThumbnailPlaceholderDataUrl();
   }
 
   private updateTextContentValidation(): void {
@@ -246,5 +249,14 @@ export class UploadPage implements OnInit {
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(file);
     });
+  }
+
+  private generateThumbnailPlaceholderDataUrl(): string {
+    const title = this.form.controls.title.value.trim();
+    const letter = (title[0] ?? 'M').toUpperCase();
+    const hue = Math.floor(Math.random() * 360);
+    const background = `hsl(${hue}, 70%, 55%)`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" fill="${background}"/><text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="220" fill="#ffffff">${letter}</text></svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
 }
