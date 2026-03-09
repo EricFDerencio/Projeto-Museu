@@ -1,7 +1,7 @@
 <section class="upload-page">
   <header class="upload-header">
-    <h1>Upload de MÃ­dia</h1>
-    <p>Adicione novos vÃ­deos, Ã¡udios ou imagens</p>
+    <h1>Upload de Mídia</h1>
+    <p>Adicione novos vídeos, áudios ou imagens</p>
   </header>
 
   <app-media-type-selector
@@ -11,7 +11,7 @@
 
   @if (showMediaFileDropzone) {
     <app-file-dropzone
-      title="Arquivo de MÃ­dia"
+      title="Arquivo de Mídia"
       [mediaType]="selectedType"
       [accept]="mediaAccept"
       [selectedFileName]="mediaFileName"
@@ -30,33 +30,45 @@
   ></app-file-dropzone>
 
   <section class="basic-info-shell">
-    <h3>InformaÃ§Ãµes BÃ¡sicas</h3>
+    <h3>Informações Básicas</h3>
 
     <form [formGroup]="form" class="basic-info-form" novalidate>
       <label>
-        <span>TÃ­tulo *</span>
-        <input type="text" formControlName="title" placeholder="Digite o tÃ­tulo da mÃ­dia" />
+        <span>Título *</span>
+        <input type="text" formControlName="title" placeholder="Digite o título da mídia" />
       </label>
 
       <label>
-        <span>DescriÃ§Ã£o *</span>
+        <span>Descrição *</span>
         <textarea
           rows="4"
           formControlName="description"
-          placeholder="Descreva o conteÃºdo da mÃ­dia"
+          placeholder="Descreva o conteúdo da mídia"
         ></textarea>
       </label>
 
       @if (selectedType === 'text') {
         <label>
-          <span>ConteÃºdo do Texto *</span>
+          <span>Conteúdo do Texto *</span>
           <textarea
             rows="7"
             formControlName="text_content"
-            placeholder="Digite ou cole o conteÃºdo do texto aqui..."
+            placeholder="Digite ou cole o conteúdo do texto aqui..."
           ></textarea>
         </label>
       }
+
+      <div class="row">
+        <label>
+          <span>Data histórica</span>
+          <input type="date" formControlName="historical_date" />
+        </label>
+
+        <label>
+          <span>Autor/Doador</span>
+          <input type="text" formControlName="author_donor" placeholder="Opcional" />
+        </label>
+      </div>
 
       <div class="row">
         <label>
@@ -67,11 +79,6 @@
               <option [value]="museum.value">{{ museum.label }}</option>
             }
           </select>
-        </label>
-
-        <label>
-          <span>Data *</span>
-          <input type="date" formControlName="registration_date" />
         </label>
       </div>
 
