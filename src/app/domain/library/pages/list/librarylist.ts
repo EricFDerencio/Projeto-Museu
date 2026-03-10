@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { FilterComponent } from '../../../shared/components/filter.component/filter.component';
-import { MediaCardComponent } from '../../../shared/components/media-card.component/media-card.component';
-import { FilterChange } from '../../../shared/models/FilterChange';
-import { FilterOption } from '../../../shared/models/FilterOption';
-import { MediaRecord } from '../../../shared/models/MediaRecord';
+import { FilterComponent } from '../../../../shared/components/filter.component/filter.component';
+import { MediaCardComponent } from '../../../../shared/components/media-card.component/media-card.component';
+import { FilterChange } from '../../../../shared/models/FilterChange';
+import { FilterOption } from '../../../../shared/models/FilterOption';
+import { MediaRecord } from '../../../../shared/models/MediaRecord';
 
 interface Museum {
   id: string | number;

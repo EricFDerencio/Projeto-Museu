@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { Librarylist } from './domain/library/library/librarylist';
-import { UploadPage } from './domain/library/upload/upload.page';
+import { Librarylist } from './domain/library/pages/list/librarylist';
+import { UploadPage } from './domain/media/pages/upload/upload.page';
 
 export const routes: Routes = [
   {
