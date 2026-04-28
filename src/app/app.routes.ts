@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Librarylist } from './domain/library/pages/list/librarylist';
 import { UploadPage } from './domain/media/pages/upload/upload.page';
+import { uploadAccessGuard } from './core/guards/upload-access.guard';
 
 export const routes: Routes = [
   {
@@ -15,10 +16,12 @@ export const routes: Routes = [
   {
     path: 'upload',
     component: UploadPage,
+    canActivate: [uploadAccessGuard],
   },
   {
     path: 'upload/:id',
     component: UploadPage,
+    canActivate: [uploadAccessGuard],
   },
   {
     path: 'library/upload',

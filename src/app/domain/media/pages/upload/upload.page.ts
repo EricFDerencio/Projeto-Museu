@@ -124,22 +124,8 @@ export class UploadPage implements OnInit {
     this.keywords = tags;
   }
 
-  onCancel(showMessage = true): void {
-    if (this.isEditMode) {
-      void this.router.navigate(['/library']);
-      return;
-    }
-
-    this.form.reset(this.formFactory.defaultValues());
-    this.selectedType = 'video';
-    this.mediaFileName = '';
-    this.thumbnailFileName = '';
-    this.selectedMediaFile = null;
-    this.selectedThumbnailFile = null;
-    this.keywords = [];
-    if (showMessage) {
-      this.actionMessage = 'Formulário limpo.';
-    }
+  onCancel(): void {
+    void this.router.navigate(['/library']);
   }
 
   onPublish(): void {
@@ -169,7 +155,7 @@ export class UploadPage implements OnInit {
         .subscribe({
           next: () => {
             this.isSubmitting = false;
-            this.actionMessage = 'Mídia atualizada com sucesso.';
+            void this.router.navigate(['/library']);
           },
           error: () => {
             this.isSubmitting = false;
@@ -182,8 +168,7 @@ export class UploadPage implements OnInit {
     this.mediaService.createMedia(payload).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.onCancel(false);
-        this.actionMessage = 'Mídia publicada com sucesso.';
+        void this.router.navigate(['/library']);
       },
       error: () => {
         this.isSubmitting = false;

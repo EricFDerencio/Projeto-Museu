@@ -4,6 +4,7 @@
   gap: 1rem;
   width: 100%;
   padding: 1rem;
+  box-sizing: border-box;
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   background-color: #f9fafb;
@@ -13,10 +14,12 @@
 .select-field {
   display: flex;
   align-items: center;
+  min-width: 0;
   min-height: 3rem;
   border: 1px solid #d1d5db;
   border-radius: 0.6rem;
   background-color: #f3f4f6;
+  box-sizing: border-box;
 }
 
 .search-field:focus-within,
@@ -42,6 +45,7 @@
 input,
 select {
   width: 100%;
+  min-width: 0;
   border: 0;
   outline: 0;
   background: transparent;
@@ -49,6 +53,7 @@ select {
   font-size: 1.1rem;
   font-weight: 400;
   padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 input::placeholder {

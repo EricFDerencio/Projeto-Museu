@@ -54,6 +54,25 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Inicializacao com 1 clique (Windows)
+
+Para subir API + frontend e abrir no navegador automaticamente:
+
+1. Instale dependencias uma vez:
+
+```bash
+npm install
+```
+
+2. Execute o arquivo `Launch-Museu.bat` na raiz do projeto.
+
+3. Para criar um atalho na area de trabalho:
+- Clique com o botao direito em `Launch-Museu.bat`.
+- Escolha `Enviar para > Area de trabalho (criar atalho)`.
+- Renomeie o atalho e, se quiser, troque o icone em `Propriedades > Alterar icone`.
+
+Esse atalho inicia `npm run dev` e abre `http://localhost:4200/` quando o frontend estiver pronto.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
